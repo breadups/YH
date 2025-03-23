@@ -142,33 +142,38 @@ function transform() {
 </script>
 <script>
   $(document).ready(function () {
-    // First, fetch user's IP and store it in the hidden field
+    let ipCaptured = false;
+
+    // Fetch user's IP and store it in the hidden field
     $.getJSON("https://api64.ipify.org?format=json", function (data) {
-      $("#ip").val(data.ip); // ✅ Set the IP field before submission
-      console.log("User IP:", data.ip); // Debugging: See if IP is captured
+      $("#ip").val(data.ip);
+      console.log("User IP Captured:", data.ip); // Debugging
+      ipCaptured = true;
     });
 
     $("#email-form").submit(function (event) {
-      event.preventDefault(); // Prevent default form submission
+      event.preventDefault(); // Stop default submission
 
-      var ipValue = $("#ip").val(); // Get the IP value before submitting
+      var ipValue = $("#ip").val(); // Get the IP value
 
-      if (!ipValue) {
-        alert("⚠️ Error: IP address not captured yet. Please try again.");
+      if (!ipCaptured || !ipValue) {
+        alert("⚠️ Error: IP address not captured yet. Please wait a few seconds and try again.");
         return; // Stop submission if IP is missing
       }
 
       var formData = $(this).serialize(); // Serialize form data
+
+      console.log("Submitting to Airtable:", formData); // Debugging
 
       $.ajax({
         url: "https://hooks.airtable.com/workflows/v1/genericWebhook/appBu3xdv93BBZNHQ/wflJqbhRBI9jhYJFy/wtrMRQZ0UCktd3q7c",
         type: "POST",
         data: formData,
         success: function () {
-          console.log("✅ Form submitted successfully with IP:", ipValue);
+          console.log("✅ Form successfully submitted with IP:", ipValue);
         },
         error: function () {
-          console.warn("⚠️ Airtable Webhook doesn't return a success response.");
+          console.warn("⚠️ Airtable Webhook didn't respond, but data was sent.");
         },
         complete: function () {
           setTimeout(function () {
