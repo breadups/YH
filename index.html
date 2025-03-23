@@ -82,8 +82,6 @@
         <div class="w-form-done">
           <div>Thank you! Your submission has been received!</div>
         </div>
-        <div class="w-form-fail">
-          <div>Oops! Something went wrong while submitting the form.</div>
         </div>
       </div>
     </div>
@@ -143,30 +141,44 @@ function transform() {
   });
 </script>
 <script>
-  document.getElementById("myForm").addEventListener("submit", async function(event) {
-      event.preventDefault(); // Stop default form submission
-      
-      let formData = {
-          name: document.getElementById("name").value
-      };
+  $(document).ready(function () {
+    // First, fetch user's IP and store it in the hidden field
+    $.getJSON("https://api64.ipify.org?format=json", function (data) {
+      $("#ip").val(data.ip); // ✅ Set the IP field before submission
+      console.log("User IP:", data.ip); // Debugging: See if IP is captured
+    });
 
-      try {
-          let response = await fetch("https://cors-anywhere.herokuapp.com/https://hooks.airtable.com/workflows/v1/genericWebhook/appUmVhcpWnlyXUqM/wflrk7QLKVgzC5PVZ/wtrv7lsx6XcqW3TPs", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(formData)
-          });
+    $("#email-form").submit(function (event) {
+      event.preventDefault(); // Prevent default form submission
 
-          if (response.ok) {
-              alert("✅ Form submitted successfully!");
-          } else {
-              alert("❌ Submission failed. Try again.");
-          }
-      } catch (error) {
-          console.error("Error:", error);
-          alert("⚠️ Error submitting form!");
+      var ipValue = $("#ip").val(); // Get the IP value before submitting
+
+      if (!ipValue) {
+        alert("⚠️ Error: IP address not captured yet. Please try again.");
+        return; // Stop submission if IP is missing
       }
+
+      var formData = $(this).serialize(); // Serialize form data
+
+      $.ajax({
+        url: "https://hooks.airtable.com/workflows/v1/genericWebhook/appUmVhcpWnlyXUqM/wflrk7QLKVgzC5PVZ/wtrv7lsx6XcqW3TPs",
+        type: "POST",
+        data: formData,
+        success: function () {
+          console.log("✅ Form submitted successfully with IP:", ipValue);
+        },
+        error: function () {
+          console.warn("⚠️ Airtable Webhook doesn't return a success response.");
+        },
+        complete: function () {
+          setTimeout(function () {
+            window.location.href = "https://www.google.com";
+          }, 1000);
+        }
+      });
+    });
   });
 </script>
+
 </body>
 </html>
