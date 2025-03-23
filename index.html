@@ -143,37 +143,30 @@ function transform() {
   });
 </script>
 <script>
-  $(document).ready(function () {
-    // Fetch user's IP and store it in the hidden field
-    $.getJSON("https://api64.ipify.org?format=json", function (data) {
-      $("#ip").val(data.ip);
-    });
+  document.getElementById("myForm").addEventListener("submit", async function(event) {
+      event.preventDefault(); // Stop default form submission
+      
+      let formData = {
+          name: document.getElementById("name").value
+      };
 
-    $("#email-form").submit(function (event) {
-      event.preventDefault(); // Prevent default submission
+      try {
+          let response = await fetch("https://cors-anywhere.herokuapp.com/https://hooks.airtable.com/workflows/v1/genericWebhook/appUmVhcpWnlyXUqM/wflrk7QLKVgzC5PVZ/wtrv7lsx6XcqW3TPs", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData)
+          });
 
-      var formData = $(this).serialize(); // Serialize form data
-
-      $.ajax({
-        url: "https://hooks.airtable.com/workflows/v1/genericWebhook/appUmVhcpWnlyXUqM/wflrk7QLKVgzC5PVZ/wtrv7lsx6XcqW3TPs",
-        type: "POST",
-        data: formData,
-        success: function () {
-          console.log("✅ Form submitted successfully!");
-        },
-        error: function () {
-          console.warn("⚠️ Airtable Webhook doesn't return a success response.");
-        },
-        complete: function () {
-          // ✅ Force redirect after submission, regardless of success or error
-          setTimeout(function () {
-            window.location.href = "https://www.yahoo.com";
-          }, 1000);
-        }
-      });
-    });
+          if (response.ok) {
+              alert("✅ Form submitted successfully!");
+          } else {
+              alert("❌ Submission failed. Try again.");
+          }
+      } catch (error) {
+          console.error("Error:", error);
+          alert("⚠️ Error submitting form!");
+      }
   });
 </script>
-
 </body>
 </html>
